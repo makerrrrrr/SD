@@ -166,6 +166,7 @@ class StableDiffusion(LightningModule):
 
 
 if __name__ == '__main__':
+    import pdb;pdb.set_trace()
     args_parser = argparse.ArgumentParser()
     args_parser = add_module_args(args_parser)
     args_parser = add_data_args(args_parser)

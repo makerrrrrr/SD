@@ -9,6 +9,7 @@
 
 # pwd=Fengshenbang-LM/fengshen/examples/pretrain_erlangshen
 ROOT_DIR=../../workspace
+
 export TORCH_EXTENSIONS_DIR=${ROOT_DIR}/torch_extendsions
 
 MODEL_NAME=taiyi-stablediffusion-1B
@@ -23,21 +24,21 @@ GPUS_PER_NODE=1
 MICRO_BATCH_SIZE=1
 
 # 如果你不用Deepspeed的话 下面的一段话都可以删掉 Begin
-CONFIG_JSON="$MODEL_ROOT_DIR/${MODEL_NAME}.ds_config.json"
-ZERO_STAGE=1
-# Deepspeed figures out GAS dynamically from dynamic GBS via set_train_batch_size()
-cat <<EOT > $CONFIG_JSON
-{
-    "zero_optimization": {
-        "stage": ${ZERO_STAGE}
-    },
-    "bf16": {
-        "enabled": true
-    },
-    "train_micro_batch_size_per_gpu": $MICRO_BATCH_SIZE
-}
-EOT
-export PL_DEEPSPEED_CONFIG_PATH=$CONFIG_JSON
+# CONFIG_JSON="$MODEL_ROOT_DIR/${MODEL_NAME}.ds_config.json"
+# ZERO_STAGE=1
+# # Deepspeed figures out GAS dynamically from dynamic GBS via set_train_batch_size()
+# cat <<EOT > $CONFIG_JSON
+# {
+#     "zero_optimization": {
+#         "stage": ${ZERO_STAGE}
+#     },
+#     "bf16": {
+#         "enabled": true
+#     },
+#     "train_micro_batch_size_per_gpu": $MICRO_BATCH_SIZE
+# }
+# EOT
+# export PL_DEEPSPEED_CONFIG_PATH=$CONFIG_JSON
 ### End
 
 DATA_ARGS="\
@@ -85,4 +86,4 @@ export options=" \
         "
 
 python3 finetune.py $options
-#srun -N $NNODES --gres=gpu:$GPUS_PER_NODE --ntasks-per-node=$GPUS_PER_NODE --cpus-per-task=20 python3 pretrain_deberta.py $options
+srun -N $NNODES --gres=gpu:$GPUS_PER_NODE --ntasks-per-node=$GPUS_PER_NODE --cpus-per-task=20 python3 pretrain_deberta.py $options
