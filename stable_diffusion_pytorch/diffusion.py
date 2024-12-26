@@ -108,6 +108,13 @@ class Upsample(nn.Module):
         return self.conv(x)
 
 class SwitchSequential(nn.Sequential):
+    '''
+        通过重载forward方法，使得每一层前向传播接收不同的参数
+        AttentionBlock层：接收x(输入特征图？)和context
+        AttentionBlock层:接收x和时间步
+        
+    '''
+    
     def forward(self, x, context, time):
         for layer in self:
             if isinstance(layer, AttentionBlock):
@@ -183,8 +190,18 @@ class FinalLayer(nn.Module):
         return x
 
 class Diffusion(nn.Module):
+    '''
+        Diffusion 模型主要结构：
+        time_embedding 时间嵌入模块：用于将时间步（当前扩散处于哪个阶段）编码为高维向量
+        unet:处理图像或者特征映射。通常用于图像生成任务，编码器捕获全局特征，解码器用于恢复细节
+            扩散模型中，unet是用来预测噪声的主要部分
+        final:最终层，调整输出形状
+        
+        
+    '''
     def __init__(self):
         super().__init__()
+        # TimeEmbedding层：输入320维，映射成1280维度
         self.time_embedding = TimeEmbedding(320)
         self.unet = UNet()
         self.final = FinalLayer(320, 4)

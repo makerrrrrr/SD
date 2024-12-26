@@ -5,6 +5,7 @@ import os
 
 def get_time_embedding(timestep, dtype):
     freqs = torch.pow(10000, -torch.arange(start=0, end=160, dtype=dtype) / 160)
+    # 
     x = torch.tensor([timestep], dtype=dtype)[:, None] * freqs[None]
     return torch.cat([torch.cos(x), torch.sin(x)], dim=-1)
 
@@ -13,6 +14,7 @@ def get_alphas_cumprod(beta_start=0.00085, beta_end=0.0120, n_training_steps=100
     alphas = 1.0 - betas
     alphas_cumprod = np.cumprod(alphas, axis=0)
     return alphas_cumprod
+
 
 def get_file_path(filename, url=None):
     module_location = os.path.dirname(os.path.abspath(__file__))

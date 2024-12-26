@@ -1,4 +1,5 @@
 import torch
+import os
 from . import Tokenizer, CLIP, Encoder, Decoder, Diffusion
 from . import util
 import warnings
@@ -32,10 +33,12 @@ def make_compatible(state_dict):
     return state_dict
 
 def load_clip(device):
+    #torch.load加载模型权重
     state_dict = torch.load(util.get_file_path('ckpt/clip.pt'))
     state_dict = make_compatible(state_dict)
 
     clip = CLIP().to(device)
+    # load_state_dict 加载模型参数,加载参数到clip模型中
     clip.load_state_dict(state_dict)
     return clip
 
@@ -62,6 +65,7 @@ def load_diffusion(device):
     diffusion = Diffusion().to(device)
     diffusion.load_state_dict(state_dict)
     return diffusion
+
 
 def preload_models(device):
     return {

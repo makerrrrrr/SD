@@ -103,7 +103,7 @@ def generate(
             generator.seed()
         else:
             generator.manual_seed(seed)
-
+        
         tokenizer = Tokenizer()
         clip = models.get('clip') or model_loader.load_clip(device)
         clip.to(device)
@@ -112,19 +112,22 @@ def generate(
         dtype = clip.embedding.position_value.dtype
         if do_cfg:
             cond_tokens = tokenizer.encode_batch(prompts)
-            cond_tokens = torch.tensor(cond_tokens, dtype=torch.long, device=device)
-            cond_context = clip(cond_tokens)
+            cond_tokens = torch.tensor(cond_tokens, dtype=torch.long, device=device)  # shape ([1, 77])
+            # clip将每个标记映射为高维向量
+            cond_context = clip(cond_tokens) #([1, 77, 768])
             uncond_tokens = tokenizer.encode_batch(uncond_prompts)
             uncond_tokens = torch.tensor(uncond_tokens, dtype=torch.long, device=device)
             uncond_context = clip(uncond_tokens)
+            #uncond_context.shape torch.Size([1, 77, 768])
+            #context.shape torch.Size([2, 77, 768])
             context = torch.cat([cond_context, uncond_context])
         else:
             tokens = tokenizer.encode_batch(prompts)
             tokens = torch.tensor(tokens, dtype=torch.long, device=device)
             context = clip(tokens)
-        to_idle(clip)
-        del tokenizer, clip
-
+        # to_idle(clip)
+        # del tokenizer, clip
+        import pdb;pdb.set_trace() 
         if sampler == "k_lms":
             sampler = KLMSSampler(n_inference_steps=n_inference_steps)
         elif sampler == "k_euler":
@@ -139,6 +142,7 @@ def generate(
                 % sampler
             )
 
+        # noise_shape (1,4,64,64)
         noise_shape = (len(prompts), 4, height // 8, width // 8)
 
         if input_images:
@@ -170,9 +174,10 @@ def generate(
             to_idle(encoder)
             del encoder, processed_input_images, input_images_tensor, latents_noise
         else:
+            # 生成一个形状为noise_shape的随机张量，其元素符合标准正态分布
             latents = torch.randn(noise_shape, generator=generator, device=device, dtype=dtype)
             latents *= sampler.initial_scale
-
+        
         diffusion = models.get('diffusion') or model_loader.load_diffusion(device)
         diffusion.to(device)
 
@@ -180,7 +185,7 @@ def generate(
         for i, timestep in enumerate(timesteps):
             time_embedding = util.get_time_embedding(timestep, dtype).to(device)
 
-            input_latents = latents * sampler.get_input_scale()
+            input_latents = latents * sampler.get_input_scale() #生成输入潜在变量
             if do_cfg:
                 input_latents = input_latents.repeat(2, 1, 1, 1)
 

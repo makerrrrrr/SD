@@ -6,6 +6,11 @@ class KLMSSampler():
     def __init__(self, n_inference_steps=50, n_training_steps=1000, lms_order=4):
         timesteps = np.linspace(n_training_steps - 1, 0, n_inference_steps)
 
+        '''
+           alphas_cumprod:随时间步t变化的信号强度因子，表示信号被保留的部分
+           1 - alphas_cumprod:表示噪声累积比例。即数据中噪声部分的累积比例
+           sigmas:初始化噪声尺度 
+        '''
         alphas_cumprod = util.get_alphas_cumprod(n_training_steps=n_training_steps)
         sigmas = ((1 - alphas_cumprod) / alphas_cumprod) ** 0.5
         log_sigmas = np.log(sigmas)
